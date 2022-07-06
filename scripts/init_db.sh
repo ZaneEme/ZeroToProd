@@ -26,7 +26,7 @@ DB_NAME="${POSTGRES_DB:=newsletter}"
 
 DB_PORT="${POSTGRES_PORT:=5432}"
 
-if [[-z "$(SKIP_DOCKER)" ]]
+if [[ -z "${SKIP_DOCKER}" ]]
 then
     docker run \
         -e POSTGRES_USER=${DB_USER}         \
@@ -40,8 +40,13 @@ fi
 # keep pinging postgres until it's ready to accept new commands
 export PGPASSWORD="${DB_PASSWORD}"
 
+>&2 echo "docker successfully started."
+
+sleep 1
+docker ps
+
 until psql -h "localhost" -U "${DB_USER}" -p "${DB_PORT}" -d "postgres" -c '\q'; do
-    >$2 echo "Postgres is still unavailable - Sleeping"
+    >&2 echo "Postgres is still unavailable - Sleeping"
     sleep 1
 done
 
